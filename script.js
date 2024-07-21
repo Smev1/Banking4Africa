@@ -1,32 +1,9 @@
-// Initialize Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyAF0a7d1FRmwSm9n8u1N_T4ceDxMOAFy5k",
-  authDomain: "shops-dd618.firebaseapp.com",
-  databaseURL: "https://shops-dd618-default-rtdb.firebaseio.com",
-  projectId: "shops-dd618",
-  storageBucket: "shops-dd618.appspot.com",
-  messagingSenderId: "552179618233",
-  appId: "1:552179618233:web:65d99c4a837f4d201fa668",
-  measurementId: "G-33YYS23DFC"
-};
+// Initialize Supabase
+const supabaseUrl = 'https://qrubbbjfdctqmswdkllw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydWJiYmpmZGN0cW1zd2RrbGx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjE1OTcxMTIsImV4cCI6MjAzNzE3MzExMn0.N50590RDksooTjVgfRhGMShH4DtKJZg0bz80GeWNqbA';
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// Existing accounts data (used only for comparison during login, no passwords stored in Firestore)
-const accounts = {
-    'user1': { password: 'pass1' },
-    'user2': { password: 'pass2' },
-    'user3': { password: 'pass3' },
-    'user4': { password: 'pass4' },
-    'user5': { password: 'pass5' },
-    'user6': { password: 'pass6' },
-    'user7': { password: 'pass7' },
-    'user8': { password: 'pass8' },
-    'user9': { password: 'pass9' },
-    'user10': { password: 'pass10' }
-};
-
+// Function to handle user login
 async function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
@@ -38,31 +15,34 @@ async function login() {
     const balanceDisplay = document.getElementById('balance');
     const transactionList = document.getElementById('transactionList');
 
-    if (accounts.hasOwnProperty(username) && accounts[username].password === password) {
-        const userDoc = await db.collection('accounts').doc(username).get();
-        if (userDoc.exists) {
-            const userData = userDoc.data();
-            userDisplay.textContent = username;
-            balanceDisplay.textContent = userData.balance;
-            loginContainer.classList.add('hidden');
-            mainContainer.classList.remove('hidden');
-            adminContainer.classList.toggle('hidden', username !== 'user1');
-            
-            // Clear previous transactions and display current ones
-            transactionList.innerHTML = '';
-            userData.transactions.forEach(transaction => {
-                const li = document.createElement('li');
-                li.textContent = transaction;
-                transactionList.appendChild(li);
-            });
-        } else {
-            loginError.classList.remove('hidden');
-        }
-    } else {
+    // Fetch the user data from Supabase
+    const { data, error } = await supabase
+        .from('accounts')
+        .select('*')
+        .eq('username', username)
+        .single();
+
+    if (error || !data || data.password !== password) {
         loginError.classList.remove('hidden');
+        return;
     }
+
+    userDisplay.textContent = username;
+    balanceDisplay.textContent = data.balance;
+    loginContainer.classList.add('hidden');
+    mainContainer.classList.remove('hidden');
+    adminContainer.classList.toggle('hidden', username !== 'user1');
+    
+    // Clear previous transactions and display current ones
+    transactionList.innerHTML = '';
+    data.transactions.forEach(transaction => {
+        const li = document.createElement('li');
+        li.textContent = transaction;
+        transactionList.appendChild(li);
+    });
 }
 
+// Function to handle user logout
 function logout() {
     document.getElementById('loginContainer').classList.remove('hidden');
     document.getElementById('mainContainer').classList.add('hidden');
@@ -76,6 +56,7 @@ function logout() {
     document.getElementById('transferSuccess').classList.add('hidden');
 }
 
+// Function to update user balance (Admin Panel)
 async function updateBalance() {
     const adminUsername = document.getElementById('adminUsername').value;
     const newBalance = parseFloat(document.getElementById('newBalance').value);
@@ -83,13 +64,33 @@ async function updateBalance() {
     const adminError = document.getElementById('adminError');
     const adminSuccess = document.getElementById('adminSuccess');
 
-    if (accounts.hasOwnProperty(adminUsername) && !isNaN(newBalance) && newBalance >= 0 && balanceReason) {
-        const userDocRef = db.collection('accounts').doc(adminUsername);
-        await userDocRef.update({
-            balance: newBalance,
-            transactions: firebase.firestore.FieldValue.arrayUnion(`Updated balance: $${newBalance}. Reason: ${balanceReason}`)
-        });
-        
+    if (!isNaN(newBalance) && newBalance >= 0 && balanceReason) {
+        const { data, error } = await supabase
+            .from('accounts')
+            .select('*')
+            .eq('username', adminUsername)
+            .single();
+
+        if (error || !data) {
+            adminError.classList.remove('hidden');
+            return;
+        }
+
+        const updatedTransactions = [...data.transactions, `Updated balance: $${newBalance}. Reason: ${balanceReason}`];
+
+        const { error: updateError } = await supabase
+            .from('accounts')
+            .update({ 
+                balance: newBalance,
+                transactions: updatedTransactions
+            })
+            .eq('username', adminUsername);
+
+        if (updateError) {
+            adminError.classList.remove('hidden');
+            return;
+        }
+
         console.log(`Updated balance: $${newBalance}. Reason: ${balanceReason}`);
 
         // Update transaction list for the current user if logged in
@@ -111,6 +112,7 @@ async function updateBalance() {
     }
 }
 
+// Function to handle money transfer between users
 async function transferMoney() {
     const fromUsername = document.getElementById('fromUsername').value;
     const toUsername = document.getElementById('toUsername').value;
@@ -119,47 +121,60 @@ async function transferMoney() {
     const transferError = document.getElementById('transferError');
     const transferSuccess = document.getElementById('transferSuccess');
 
-    if (accounts.hasOwnProperty(fromUsername) && accounts.hasOwnProperty(toUsername) && 
-        !isNaN(transferAmount) && transferAmount > 0 && transferReason) {
+    if (!isNaN(transferAmount) && transferAmount > 0 && transferReason) {
+        const { data: fromData, error: fromError } = await supabase
+            .from('accounts')
+            .select('*')
+            .eq('username', fromUsername)
+            .single();
+        const { data: toData, error: toError } = await supabase
+            .from('accounts')
+            .select('*')
+            .eq('username', toUsername)
+            .single();
 
-        const fromUserDocRef = db.collection('accounts').doc(fromUsername);
-        const toUserDocRef = db.collection('accounts').doc(toUsername);
+        if (fromError || toError || !fromData || !toData || fromData.balance < transferAmount) {
+            transferError.classList.remove('hidden');
+            return;
+        }
 
-        await db.runTransaction(async (transaction) => {
-            const fromUserDoc = await transaction.get(fromUserDocRef);
-            const toUserDoc = await transaction.get(toUserDocRef);
+        const updatedFromTransactions = [...fromData.transactions, `Transferred $${transferAmount} to ${toUsername}. Reason: ${transferReason}`];
+        const updatedToTransactions = [...toData.transactions, `Received $${transferAmount} from ${fromUsername}. Reason: ${transferReason}`];
 
-            if (!fromUserDoc.exists || !toUserDoc.exists) {
-                throw new Error('User does not exist');
-            }
+        const { error: updateFromError } = await supabase
+            .from('accounts')
+            .update({ 
+                balance: fromData.balance - transferAmount,
+                transactions: updatedFromTransactions
+            })
+            .eq('username', fromUsername);
 
-            const fromUserData = fromUserDoc.data();
-            const toUserData = toUserDoc.data();
+        const { error: updateToError } = await supabase
+            .from('accounts')
+            .update({ 
+                balance: toData.balance + transferAmount,
+                transactions: updatedToTransactions
+            })
+            .eq('username', toUsername);
 
-            if (fromUserData.balance < transferAmount) {
-                throw new Error('Insufficient funds');
-            }
+        if (updateFromError || updateToError) {
+            transferError.classList.remove('hidden');
+            return;
+        }
 
-            transaction.update(fromUserDocRef, {
-                balance: fromUserData.balance - transferAmount,
-                transactions: firebase.firestore.FieldValue.arrayUnion(`Sent $${transferAmount} to ${toUsername}. Reason: ${transferReason}`)
-            });
+        console.log(`Transferred $${transferAmount} from ${fromUsername} to ${toUsername}. Reason: ${transferReason}`);
 
-            transaction.update(toUserDocRef, {
-                balance: toUserData.balance + transferAmount,
-                transactions: firebase.firestore.FieldValue.arrayUnion(`Received $${transferAmount} from ${fromUsername}. Reason: ${transferReason}`)
-            });
-        });
-
-        // Update transaction list for the current user if logged in
+        // Update transaction list for current users if logged in
         const currentUser = document.getElementById('user').textContent;
-        if (currentUser === fromUsername || currentUser === toUsername) {
+        if (currentUser === fromUsername) {
             const transactionList = document.getElementById('transactionList');
             const li = document.createElement('li');
-            li.textContent = `Sent $${transferAmount} to ${toUsername}. Reason: ${transferReason}`;
-            if (currentUser === toUsername) {
-                li.textContent = `Received $${transferAmount} from ${fromUsername}. Reason: ${transferReason}`;
-            }
+            li.textContent = `Transferred $${transferAmount} to ${toUsername}. Reason: ${transferReason}`;
+            transactionList.appendChild(li);
+        } else if (currentUser === toUsername) {
+            const transactionList = document.getElementById('transactionList');
+            const li = document.createElement('li');
+            li.textContent = `Received $${transferAmount} from ${fromUsername}. Reason: ${transferReason}`;
             transactionList.appendChild(li);
         }
 
