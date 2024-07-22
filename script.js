@@ -1,4 +1,4 @@
-const SHEET_ID = '1VwFZwmN56ttg1mOQi9JxOYkO2_2xr3DQXdJ2jqzr3kw'; // Replace with your Google Sheet ID
+const SHEET_ID = '1M6ZmUli6SWkraVTi_gLazj7fYsOa6NlsjUqRbMEl3fU'; // Replace with your Google Sheet ID
 const API_KEY = 'AIzaSyCTLv7w6jZyjA9W6U4zhi16i7UB2rDyksU'; // Replace with your Google Sheets API key
 const SHEET_NAME = 'Sheet1'; // Change this to the name of your sheet
 
@@ -14,7 +14,6 @@ function getSheetData(range, callback) {
 // Update data in Google Sheets
 function updateSheetData(range, values, callback) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!${range}?valueInputOption=RAW&key=${API_KEY}`;
-    
     fetch(url, {
         method: 'PUT',
         headers: {
@@ -25,21 +24,9 @@ function updateSheetData(range, values, callback) {
             values: [values],
         }),
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => {
-                throw new Error(`Failed to update sheet data: ${err.error.message}`);
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Sheet updated successfully:', data);
-        if (callback) callback(data);
-    })
-    .catch(error => {
-        console.error('Error updating sheet data:', error);
-    });
+    .then(response => response.json())
+    .then(data => callback(data))
+    .catch(error => console.error('Error updating sheet data:', error));
 }
 
 // Handle login
