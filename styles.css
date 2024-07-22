@@ -15,7 +15,7 @@ body {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 300px;
     width: 100%;
     padding: 20px;
     border-radius: 15px;
@@ -59,34 +59,4 @@ h2, h3 {
 
 p {
     margin-top: 20px;
-}
-
-.mainContent {
-    display: flex;
-    justify-content: space-between;
-}
-
-.transactionsBox, .balanceBox {
-    width: 48%;
-    padding: 20px;
-    border-radius: 15px;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.transactionsBox {
-    margin-right: 20px;
-}
-
-.transactionsBox ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.transactionsBox li {
-    border-bottom: 1px solid #ddd;
-    padding: 5px 0;
 }

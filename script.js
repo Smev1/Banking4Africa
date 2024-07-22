@@ -1,89 +1,92 @@
-// Replace the following config object with your Firebase project's config object
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyAF0a7d1FRmwSm9n8u1N_T4ceDxMOAFy5k",
-  authDomain: "shops-dd618.firebaseapp.com",
-  databaseURL: "https://shops-dd618-default-rtdb.firebaseio.com",
-  projectId: "shops-dd618",
-  storageBucket: "shops-dd618.appspot.com",
-  messagingSenderId: "552179618233",
-  appId: "1:552179618233:web:65d99c4a837f4d201fa668",
-  measurementId: "G-33YYS23DFC"
+// Predefined accounts with passwords and balances
+const accounts = {
+    'user1': {password: 'pass1', balance: 1000},
+    'user2': {password: 'pass2', balance: 2000},
+    'user3': {password: 'pass3', balance: 3000},
+    'user4': {password: 'pass4', balance: 4000},
+    'user5': {password: 'pass5', balance: 5000},
+    'user6': {password: 'pass6', balance: 6000},
+    'user7': {password: 'pass7', balance: 7000},
+    'user8': {password: 'pass8', balance: 8000},
+    'user9': {password: 'pass9', balance: 9000},
+    'user10': {password: 'pass10', balance: 10000}
 };
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-
-// Initialize Firestore and Auth
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-let currentUserDocId = null;
 
 function login() {
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const loginContainer = document.getElementById('loginContainer');
+    const balanceContainer = document.getElementById('balanceContainer');
+    const adminContainer = document.getElementById('adminContainer');
+    const loginError = document.getElementById('loginError');
+    const userDisplay = document.getElementById('user');
+    const balanceDisplay = document.getElementById('balance');
 
-  db.collection('users').where('username', '==', username).where('password', '==', password).get()
-    .then(querySnapshot => {
-      if (!querySnapshot.empty) {
-        querySnapshot.forEach(doc => {
-          const userData = doc.data();
-          currentUserDocId = doc.id; // Store the document ID of the logged-in user
-          document.getElementById('loginContainer').classList.add('hidden');
-          document.getElementById('mainContainer').classList.remove('hidden');
-          document.getElementById('user').innerText = userData.username;
-          setupRealtimeListener(currentUserDocId);
-        });
-      } else {
-        document.getElementById('loginError').classList.remove('hidden');
-      }
-    })
-    .catch(error => {
-      console.error('Error getting documents: ', error);
-    });
-}
-
-function setupRealtimeListener(docId) {
-  db.collection('users').doc(docId).onSnapshot((doc) => {
-    const userData = doc.data();
-    document.getElementById('balance').innerText = userData.balance;
-    loadTransactions(userData.transactions);
-  });
-}
-
-function loadTransactions(transactions) {
-  const transactionList = document.getElementById('transactionList');
-  transactionList.innerHTML = '';
-  transactions.forEach(transaction => {
-    const li = document.createElement('li');
-    li.innerText = `${transaction.date}: ${transaction.description} - $${transaction.amount}`;
-    transactionList.appendChild(li);
-  });
+    if (accounts.hasOwnProperty(username) && accounts[username].password === password) {
+        userDisplay.textContent = username;
+        balanceDisplay.textContent = accounts[username].balance;
+        loginContainer.classList.add('hidden');
+        balanceContainer.classList.remove('hidden');
+        if (username === 'user1') {
+            adminContainer.classList.remove('hidden');
+        }
+    } else {
+        loginError.classList.remove('hidden');
+    }
 }
 
 function logout() {
-  document.getElementById('mainContainer').classList.add('hidden');
-  document.getElementById('loginContainer').classList.remove('hidden');
+    document.getElementById('loginContainer').classList.remove('hidden');
+    document.getElementById('balanceContainer').classList.add('hidden');
+    document.getElementById('adminContainer').classList.add('hidden');
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('loginError').classList.add('hidden');
+    document.getElementById('adminError').classList.add('hidden');
+    document.getElementById('adminSuccess').classList.add('hidden');
+    document.getElementById('transferError').classList.add('hidden');
+    document.getElementById('transferSuccess').classList.add('hidden');
 }
 
 function updateBalance() {
-  const adminUsername = document.getElementById('adminUsername').value;
-  const newBalance = parseFloat(document.getElementById('newBalance').value);
+    const adminUsername = document.getElementById('adminUsername').value;
+    const newBalance = parseFloat(document.getElementById('newBalance').value);
+    const balanceReason = document.getElementById('balanceReason').value;
+    const adminError = document.getElementById('adminError');
+    const adminSuccess = document.getElementById('adminSuccess');
 
-  db.collection('users').where('username', '==', adminUsername).get()
-    .then(querySnapshot => {
-      if (!querySnapshot.empty) {
-        querySnapshot.forEach(doc => {
-          db.collection('users').doc(doc.id).update({ balance: newBalance })
-            .then(() => {
-              if (currentUserDocId === doc.id) {
-                document.getElementById('balance').innerText = newBalance;
-              }
-            });
-        });
-      }
-    })
-    .catch(error => {
-      console.error('Error updating balance: ', error);
-    });
+    if (accounts.hasOwnProperty(adminUsername) && !isNaN(newBalance) && newBalance >= 0 && balanceReason) {
+        accounts[adminUsername].balance = newBalance;
+        console.log(`Balance updated for ${adminUsername}: ${newBalance}. Reason: ${balanceReason}`);
+        adminError.classList.add('hidden');
+        adminSuccess.classList.remove('hidden');
+        setTimeout(() => {
+            adminSuccess.classList.add('hidden');
+        }, 2000);
+    } else {
+        adminError.classList.remove('hidden');
+    }
+}
+
+function transferMoney() {
+    const fromUsername = document.getElementById('fromUsername').value;
+    const toUsername = document.getElementById('toUsername').value;
+    const transferAmount = parseFloat(document.getElementById('transferAmount').value);
+    const transferReason = document.getElementById('transferReason').value;
+    const transferError = document.getElementById('transferError');
+    const transferSuccess = document.getElementById('transferSuccess');
+
+    if (accounts.hasOwnProperty(fromUsername) && accounts.hasOwnProperty(toUsername) && 
+        !isNaN(transferAmount) && transferAmount > 0 && transferReason && accounts[fromUsername].balance >= transferAmount) {
+        accounts[fromUsername].balance -= transferAmount;
+        accounts[toUsername].balance += transferAmount;
+        console.log(`Transferred ${transferAmount} from ${fromUsername} to ${toUsername}. Reason: ${transferReason}`);
+        transferError.classList.add('hidden');
+        transferSuccess.classList.remove('hidden');
+        setTimeout(() => {
+            transferSuccess.classList.add('hidden');
+        }, 2000);
+    } else {
+        transferError.classList.remove('hidden');
+    }
 }

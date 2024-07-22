@@ -16,33 +16,30 @@
         <p id="loginError" style="color: red;" class="hidden">Invalid username or password</p>
     </div>
 
-    <div class="container hidden" id="mainContainer">
-        <div class="mainContent">
-            <div class="transactionsBox">
-                <h2>Transaction History</h2>
-                <ul id="transactionList"></ul>
-            </div>
-            <div class="balanceBox">
-                <h2>Welcome, <span id="user"></span></h2>
-                <p>Your balance is: $<span id="balance"></span></p>
-                <button onclick="logout()">Logout</button>
-            </div>
-        </div>
-
-        <div class="container hidden" id="adminContainer">
-            <h2>Admin Panel</h2>
-            <input type="text" id="adminUsername" placeholder="Username to Update"><br>
-            <input type="number" id="newBalance" placeholder="New Balance"><br>
-            <button onclick="updateBalance()">Update Balance</button>
-        </div>
+    <div class="container hidden" id="balanceContainer">
+        <h2>Welcome, <span id="user"></span></h2>
+        <p>Your balance is: $<span id="balance"></span></p>
+        <button onclick="logout()">Logout</button>
     </div>
 
-    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-
-    <!-- Add Firebase products that you want to use -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <div class="container hidden" id="adminContainer">
+        <h2>Admin Panel</h2>
+        <input type="text" id="adminUsername" placeholder="Username to Update"><br>
+        <input type="number" id="newBalance" placeholder="New Balance"><br>
+        <input type="text" id="balanceReason" placeholder="Reason for Balance Update"><br>
+        <button onclick="updateBalance()">Update Balance</button>
+        <p id="adminError" style="color: red;" class="hidden">Invalid username or balance</p>
+        <p id="adminSuccess" style="color: green;" class="hidden">Balance updated successfully</p>
+        
+        <h3>Transfer Money</h3>
+        <input type="text" id="fromUsername" placeholder="From Username"><br>
+        <input type="text" id="toUsername" placeholder="To Username"><br>
+        <input type="number" id="transferAmount" placeholder="Amount"><br>
+        <input type="text" id="transferReason" placeholder="Reason for Transfer"><br>
+        <button onclick="transferMoney()">Transfer Money</button>
+        <p id="transferError" style="color: red;" class="hidden">Invalid transfer details</p>
+        <p id="transferSuccess" style="color: green;" class="hidden">Money transferred successfully</p>
+    </div>
 
     <script src="script.js"></script>
 </body>
