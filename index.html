@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Banking System</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="header">Smevy's Bank</div>
@@ -34,21 +33,16 @@
             <h2>Admin Panel</h2>
             <input type="text" id="adminUsername" placeholder="Username to Update"><br>
             <input type="number" id="newBalance" placeholder="New Balance"><br>
-            <input type="text" id="balanceReason" placeholder="Reason for Balance Update"><br>
             <button onclick="updateBalance()">Update Balance</button>
-            <p id="adminError" style="color: red;" class="hidden">Invalid username or balance</p>
-            <p id="adminSuccess" style="color: green;" class="hidden">Balance updated successfully</p>
-            
-            <h3>Transfer Money</h3>
-            <input type="text" id="fromUsername" placeholder="From Username"><br>
-            <input type="text" id="toUsername" placeholder="To Username"><br>
-            <input type="number" id="transferAmount" placeholder="Amount"><br>
-            <input type="text" id="transferReason" placeholder="Reason for Transfer"><br>
-            <button onclick="transferMoney()">Transfer Money</button>
-            <p id="transferError" style="color: red;" class="hidden">Invalid transfer details</p>
-            <p id="transferSuccess" style="color: green;" class="hidden">Money transferred successfully</p>
         </div>
     </div>
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 
     <script src="script.js"></script>
 </body>
