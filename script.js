@@ -93,7 +93,7 @@ async function updateBalance() {
 
         console.log(`Updated balance: $${newBalance}. Reason: ${balanceReason}`);
 
-        // Update transaction list for the current user if logged in
+        // Update transaction list for the user if logged in
         const currentUser = document.getElementById('user').textContent;
         if (currentUser === adminUsername) {
             const transactionList = document.getElementById('transactionList');
