@@ -14,6 +14,7 @@ function getSheetData(range, callback) {
 // Update data in Google Sheets
 function updateSheetData(range, values, callback) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!${range}?valueInputOption=RAW&key=${API_KEY}`;
+    
     fetch(url, {
         method: 'PUT',
         headers: {
@@ -24,9 +25,21 @@ function updateSheetData(range, values, callback) {
             values: [values],
         }),
     })
-    .then(response => response.json())
-    .then(data => callback(data))
-    .catch(error => console.error('Error updating sheet data:', error));
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(`Failed to update sheet data: ${err.error.message}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Sheet updated successfully:', data);
+        if (callback) callback(data);
+    })
+    .catch(error => {
+        console.error('Error updating sheet data:', error);
+    });
 }
 
 // Handle login
