@@ -2,26 +2,40 @@ const SHEET_ID = '1M6ZmUli6SWkraVTi_gLazj7fYsOa6NlsjUqRbMEl3fU'; // Replace with
 const API_KEY = 'AIzaSyCTLv7w6jZyjA9W6U4zhi16i7UB2rDyksU'; // Replace with your Google Sheets API key
 const SHEET_NAME = 'Sheet1'; // Change this to the name of your sheet
 
+// Replace this with your OAuth 2.0 access token
+const ACCESS_TOKEN = 'ya29.a0AXooCguFdl6oR2FTnpo00TcYiZSeWc0B9A4wKN_P1B84K0XPQ533lahC76VJ1A70ndU03Ih1kMFZkoF5ner1HeLAhKKXJVgR3t3oKfzJTUZ8aaGFNY5qIMGAZDkzKp1M3sQXTcOmJ0Z3vFr1jzA2rmfllziss5wIpmMZaCgYKAT0SARESFQHGX2MiHHmI8rWIEvNjQ5xvVZ5drw0171';
+
 // Fetch data from Google Sheets
 function getSheetData(range, callback) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!${range}?key=${API_KEY}`;
-    fetch(url)
-        .then(response => response.json())
-        .then(data => callback(data))
-        .catch(error => console.error('Error fetching sheet data:', error));
+    fetch(url, {
+        headers: {
+            'Authorization': `Bearer ${ACCESS_TOKEN}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to fetch sheet data');
+        }
+        return response.json();
+    })
+    .then(data => callback(data))
+    .catch(error => console.error('Error fetching sheet data:', error));
 }
 
 // Update data in Google Sheets
 function updateSheetData(range, values, callback) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!${range}?valueInputOption=RAW&key=${API_KEY}`;
-    
+
     fetch(url, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${ACCESS_TOKEN}`
         },
         body: JSON.stringify({
             range: `${SHEET_NAME}!${range}`,
+            majorDimension: 'ROWS',
             values: [values],
         }),
     })
