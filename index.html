@@ -3,44 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Banking System</title>
+    <title>Banking System</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
 </head>
 <body>
-    <div class="header">Smevy's Bank</div>
-    <div class="container" id="loginContainer">
-        <h2>Login</h2>
-        <input type="text" id="username" placeholder="Username"><br>
-        <input type="password" id="password" placeholder="Password"><br>
-        <button onclick="login()">Login</button>
-        <p id="loginError" style="color: red;" class="hidden">Invalid username or password</p>
+    <div class="header">
+        <h2>Banking System</h2>
     </div>
-
-    <div class="container hidden" id="balanceContainer">
-        <h2>Welcome, <span id="user"></span></h2>
-        <p>Your balance is: $<span id="balance"></span></p>
+    <div id="loginContainer" class="container">
+        <h3>Login</h3>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+        <p id="loginError" class="hidden">Invalid username or password</p>
+    </div>
+    <div id="balanceContainer" class="container hidden">
+        <h3>Welcome, <span id="user"></span></h3>
+        <p>Your balance is: <span id="balance"></span></p>
         <button onclick="logout()">Logout</button>
     </div>
-
-    <div class="container hidden" id="adminContainer">
-        <h2>Admin Panel</h2>
-        <input type="text" id="adminUsername" placeholder="Username to Update"><br>
-        <input type="number" id="newBalance" placeholder="New Balance"><br>
-        <input type="text" id="balanceReason" placeholder="Reason for Balance Update"><br>
+    <div id="adminContainer" class="container hidden">
+        <h3>Admin Panel</h3>
+        <input type="text" id="adminUsername" placeholder="Username" required>
+        <input type="number" id="newBalance" placeholder="New Balance" required>
+        <input type="text" id="balanceReason" placeholder="Reason for Update" required>
         <button onclick="updateBalance()">Update Balance</button>
-        <p id="adminError" style="color: red;" class="hidden">Invalid username or balance</p>
-        <p id="adminSuccess" style="color: green;" class="hidden">Balance updated successfully</p>
-        
+        <p id="adminError" class="hidden">Error updating balance</p>
+        <p id="adminSuccess" class="hidden">Balance updated successfully</p>
         <h3>Transfer Money</h3>
-        <input type="text" id="fromUsername" placeholder="From Username"><br>
-        <input type="text" id="toUsername" placeholder="To Username"><br>
-        <input type="number" id="transferAmount" placeholder="Amount"><br>
-        <input type="text" id="transferReason" placeholder="Reason for Transfer"><br>
+        <input type="text" id="fromUsername" placeholder="From Username" required>
+        <input type="text" id="toUsername" placeholder="To Username" required>
+        <input type="number" id="transferAmount" placeholder="Amount" required>
+        <input type="text" id="transferReason" placeholder="Reason for Transfer" required>
         <button onclick="transferMoney()">Transfer Money</button>
-        <p id="transferError" style="color: red;" class="hidden">Invalid transfer details</p>
-        <p id="transferSuccess" style="color: green;" class="hidden">Money transferred successfully</p>
+        <p id="transferError" class="hidden">Error transferring money</p>
+        <p id="transferSuccess" class="hidden">Money transferred successfully</p>
     </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
